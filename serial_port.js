@@ -1,53 +1,87 @@
+let msg = "Not connected";
+let serialOptions = { baudRate: 9600 };
 let serial;
+let isConnected = false;
+
 let pitch = 0;
 let roll = 0;
+let alert = false;
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(500, 200);
+  background(100);
+  textFont('Courier New');
+  textSize(20);
 
   serial = new Serial();
-
-  let btn = createButton("Connect");
-  btn.position(10, 10);
-  btn.mousePressed(() => {
-    serial.connectAndOpen();
-  });
-
-  serial.on("portavailable", () => {
-    serial.open(serial.availablePorts[0]);
-  });
-
-  // Correct event name:
-  serial.on("datareceived", serialEvent);
-  serial.on("error", (err) => console.error("Serial error:", err));
-}
-
-function serialEvent() {
-  let line = serial.readLine();
-  if (!line) return;
-  line = line.trim();
-  console.log("Received:", line);
-
-  if (line.startsWith("PITCH:")) {
-    let parts = line.split(",");
-    if (parts.length === 2) {
-      pitch = parseFloat(parts[0].split(":")[1]);
-      roll = parseFloat(parts[1].split(":")[1]);
-      console.log(`Parsed pitch: ${pitch}, roll: ${roll}`);
-    }
-  }
+  serial.on(SerialEvents.CONNECTION_OPENED, onSerialConnectionOpened);
+  serial.on(SerialEvents.CONNECTION_CLOSED, onSerialConnectionClosed);
+  serial.on(SerialEvents.DATA_RECEIVED, onSerialDataReceived);
+  serial.on(SerialEvents.ERROR_OCCURRED, onSerialErrorOccurred);
 }
 
 function draw() {
-  let tilt = constrain(sqrt(pitch * pitch + roll * roll), 0, 30);
-  let r = map(tilt, 0, 30, 0, 255);
-  let g = map(tilt, 0, 30, 255, 0);
-  background(r, g, 0);
+  background(alert ? 'red' : 50);
+  fill(alert ? 'white' : 'lime');
+  text(msg, 20, 40);
 
   fill(255);
-  textSize(18);
-  textAlign(CENTER, CENTER);
-  text(`Pitch: ${pitch.toFixed(1)}°`, width / 2, height / 2 - 30);
-  text(`Roll: ${roll.toFixed(1)}°`, width / 2, height / 2);
-  text(`Tilt: ${tilt.toFixed(1)}°`, width / 2, height / 2 + 30);
+  textSize(16);
+  text(`Pitch: ${pitch.toFixed(2)}`, 20, 80);
+  text(`Roll: ${roll.toFixed(2)}`, 20, 110);
+}
+
+function mouseClicked() {
+  if (!isConnected) {
+    isConnected = connectPort();
+  }
+}
+
+async function connectPort() {
+  if (!serial.isOpen()) {
+    await serial.connectAndOpen(null, serialOptions);
+  } else {
+    serial.autoConnectAndOpenPreviouslyApprovedPort(serialOptions);
+  }
+}
+
+function onSerialConnectionOpened(eventSender) {
+  console.log("Serial connection opened");
+  msg = "🌈 Connected!";
+}
+
+function onSerialConnectionClosed(eventSender) {
+  console.log("Serial connection closed");
+  msg = "Connection Closed!";
+  isConnected = false;
+}
+
+function onSerialErrorOccurred(eventSender, error) {
+  console.error("Serial error", error);
+  msg = "Serial Error Occurred!";
+}
+
+function onSerialDataReceived(eventSender, newData) {
+  newData = newData.trim();
+  console.log("Received:", newData);
+
+  if (newData === "ALERT") {
+    alert = true;
+    msg = "!!! ALERT !!!";
+  } else if (newData.startsWith("PITCH:")) {
+    // Parse PITCH:<value>,ROLL:<value>
+    let parts = newData.split(",");
+    if (parts.length === 2) {
+      let pitchPart = parts[0].split(":");
+      let rollPart = parts[1].split(":");
+      if (pitchPart.length === 2 && rollPart.length === 2) {
+        pitch = parseFloat(pitchPart[1]);
+        roll = parseFloat(rollPart[1]);
+        alert = false;
+        msg = `Pitch: ${pitch.toFixed(2)}, Roll: ${roll.toFixed(2)}`;
+      }
+    }
+  } else {
+    msg = "Received: " + newData;
+  }
 }
