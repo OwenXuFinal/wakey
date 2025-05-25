@@ -10,7 +10,7 @@ function setup() {
   let btn = createButton("Connect");
   btn.position(10, 10);
   btn.mousePressed(() => {
-    serial.requestPort();
+    serial.connectAndOpen();
   });
 
   serial.on("portavailable", () => {
