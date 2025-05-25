@@ -17,28 +17,26 @@ function setup() {
     serial.open(serial.availablePorts[0]);
   });
 
-  serial.on("data", serialEvent);
+  // Correct event name:
+  serial.on("datareceived", serialEvent);
   serial.on("error", (err) => console.error("Serial error:", err));
 }
 
 function serialEvent() {
   let line = serial.readLine();
-  if (!line) return;  // Ignore empty data
+  if (!line) return;
   line = line.trim();
   console.log("Received:", line);
 
   if (line.startsWith("PITCH:")) {
     let parts = line.split(",");
     if (parts.length === 2) {
-      let pitchStr = parts[0].split(":")[1];
-      let rollStr = parts[1].split(":")[1];
-      pitch = parseFloat(pitchStr);
-      roll = parseFloat(rollStr);
+      pitch = parseFloat(parts[0].split(":")[1]);
+      roll = parseFloat(parts[1].split(":")[1]);
       console.log(`Parsed pitch: ${pitch}, roll: ${roll}`);
     }
   }
 }
-
 
 function draw() {
   let tilt = constrain(sqrt(pitch * pitch + roll * roll), 0, 30);
