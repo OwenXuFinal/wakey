@@ -5,7 +5,7 @@ let roll = 0;
 function setup() {
   createCanvas(400, 400);
 
-  serial = new p5.SerialPort();
+  serial = new p5.Serial();
 
   let btn = createButton("Connect");
   btn.position(10, 10);
