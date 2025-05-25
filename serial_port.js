@@ -22,16 +22,23 @@ function setup() {
 }
 
 function serialEvent() {
-  let line = serial.readLine().trim();
+  let line = serial.readLine();
+  if (!line) return;  // Ignore empty data
+  line = line.trim();
   console.log("Received:", line);
+
   if (line.startsWith("PITCH:")) {
     let parts = line.split(",");
     if (parts.length === 2) {
-      pitch = parseFloat(parts[0].split(":")[1]);
-      roll = parseFloat(parts[1].split(":")[1]);
+      let pitchStr = parts[0].split(":")[1];
+      let rollStr = parts[1].split(":")[1];
+      pitch = parseFloat(pitchStr);
+      roll = parseFloat(rollStr);
+      console.log(`Parsed pitch: ${pitch}, roll: ${roll}`);
     }
   }
 }
+
 
 function draw() {
   let tilt = constrain(sqrt(pitch * pitch + roll * roll), 0, 30);
