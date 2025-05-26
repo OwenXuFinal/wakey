@@ -21,8 +21,8 @@ float pitchOffset = 0;
 float rollOffset = 0;
 
 void setup() {
-  Serial.begin(9600);        // USB serial monitor
-  BTSerial.begin(9600);      // HC-05 default baud rate
+  Serial.begin(9600);
+  BTSerial.begin(9600);
   while (!Serial);
 
   pinMode(buzzerPin, OUTPUT);
