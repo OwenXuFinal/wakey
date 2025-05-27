@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MR WAKEY</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      background-color: lightblue;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      color: white;
+      font-size: 8rem;
+      margin: 0;
+      z-index: 2; /* keep on top */
+    }
+
+    a {
+      margin-top: 3rem;
+      color: white;
+      text-decoration: none;
+      font-size: 2rem;
+      z-index: 2;
+    }
+
+    a:hover {
+      text-decoration: underline;
+      color:rgb(0, 207, 10)
+
+    }
+
+    .runner {
+      position: absolute;
+      width: 100px;
+      height: auto;
+      left: -100px; 
+      z-index: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>INTRODUCING MR WAKEY</h1>
+  <a href="wakey.html">LET'S GO MEET HIM</a>
+
+  <script>
+    const imageSrc = 'wakey.png'; 
+    const numRunners = 15;
+    const runners = [];
+    let screenWidth = window.innerWidth;
+    let screenHeight = window.innerHeight;
+
+    function createRunner() {
+      const img = document.createElement('img');
+      img.src = imageSrc;
+      img.classList.add('runner');
+      document.body.appendChild(img);
+      return img;
+    }
+
+    function runAcross(runner) {
+      runner.style.transition = 'none';
+      runner.style.left = '-100px';
+
+      // Random vertical position
+      const randomTop = Math.random() * (screenHeight - 100); // 100 = approx image height
+      runner.style.top = randomTop + 'px';
+
+      // Random speed between 3s and 7s
+      const speed = 3000 + Math.random() * 4000;
+
+      // Trigger reflow so transition can apply
+      runner.offsetHeight;
+
+      // Animate to the right
+      runner.style.transition = `left ${speed}ms linear`;
+      runner.style.left = screenWidth + 'px';
+
+      // When animation ends, start again
+      runner.ontransitionend = () => runAcross(runner);
+    }
+
+    // Create and start all runners
+    for (let i = 0; i < numRunners; i++) {
+      const runner = createRunner();
+      const initialDelay = Math.random() * 5500
+      setTimeout(() => runAcross(runner), initialDelay);
+      runners.push(runner);
+    }
+
+    // Update screen size on resize
+    window.addEventListener('resize', () => {
+      screenWidth = window.innerWidth;
+      screenHeight = window.innerHeight;
+    });
+  </script>
+
+</body>
+</html>
